@@ -67,7 +67,10 @@ class Vector:
         return self.length()
 
     def __str__(self):
-        return f"[{self.i:.2f}, {self.j:.2f}, {self.k:.2f}] ** T"
+        return f"[{self.i:.2f}i, {self.j:.2f}j, {self.k:.2f}k]"
+
+    def __repr__(self):
+        return f"Vector({self.i}, {self.j}, {self.k})"
 
     def transform(self, other):
         return Vector(self.i * other.i, self.j * other.j, self.k * other.k)
@@ -82,6 +85,9 @@ class Vector:
         return Vector(self.x * math.cos(yaw) + (self.z * math.sin(pitch) + self.y * math.cos(pitch)) * math.sin(yaw),
                       -self.x * math.sin(yaw) + (self.z * math.sin(pitch) + self.y * math.cos(pitch)) * math.cos(yaw),
                       self.z * math.cos(pitch) - self.y * math.sin(pitch))
+
+    def normalize(self):
+        return self / abs(self)
 
     @property
     def x(self):

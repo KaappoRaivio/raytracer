@@ -18,8 +18,29 @@ class Painter:
     def set(self, x, y, color):
         self.window.fill(color, pygame.Rect(x * self.scale, y * self.scale, self.scale, self.scale))
 
+    def fill(self, pixels):
+        for y, row in enumerate(pixels):
+            for x, pixel in enumerate(row):
+                self.set(x, y, pixel)
+
     def update(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
         pygame.display.flip()
+
+    def wait(self, callback=lambda x: x):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                else:
+                    if callback(event):
+                        # self.update()
+                        return
+
 
 
     def __exit__(self, exc_type, exc_val, exc_tb):

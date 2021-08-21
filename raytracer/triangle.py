@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 
 from vector import Vector
@@ -14,7 +16,8 @@ class Plane:
 
     def get_intersection_distance(self, ray):
         if self.normal * ray.direction == 0:
-            raise Exception(f"Ray {ray} doesn't intersect plane {self}!")
+            # raise Exception(f"{ray} doesn't intersect {self}!")
+            return 0
         else:
             return -(self.normal * ray.constant + self.intersect) / (self.normal * ray.direction)
 
@@ -27,6 +30,11 @@ class Ray:
     def apply(self, λ):
         return self.constant + λ * self.direction
 
+@dataclasses.dataclass
+class Intersection:
+    distance: int
+    intersecton: Vector
+    vertex: Triangle
 
 class Triangle:
     def __init__(self, t1, t2, t3):
@@ -55,12 +63,14 @@ class Triangle:
 
     def get_intersection(self, ray):
         λ = self.plane.get_intersection_distance(ray)
-        print(λ)
+        if not λ:
+            return False
+        # print(λ)
         intersection = ray.apply(λ)
         if not self.contains(intersection):
             return False
         else:
-            return intersection
+            return Intersection(λ, intersection, self)
 
     def check_coarse(self, vector):
         # print(self.minimum < vector < self.maximum)
