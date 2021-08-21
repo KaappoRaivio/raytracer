@@ -64,7 +64,7 @@ class TestTriangle(unittest.TestCase):
                      Vector(0, 1, 0),
                      Vector(0, 0, 1))
 
-        assert t.is_inside(Vector(0.28, 0.23, 0.49))
+        assert t.contains(Vector(0.28, 0.23, 0.49))
 
     def test_intersect_coarse(self):
         t = Triangle(Vector(1, 0, 0),

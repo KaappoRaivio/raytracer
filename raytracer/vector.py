@@ -69,6 +69,20 @@ class Vector:
     def __str__(self):
         return f"[{self.i:.2f}, {self.j:.2f}, {self.k:.2f}] ** T"
 
+    def transform(self, other):
+        return Vector(self.i * other.i, self.j * other.j, self.k * other.k)
+
+    def rotate_z(self, yaw):
+        return self.rotate(yaw, 0)
+
+    def rotate_x(self, pitch):
+        return self.rotate(0, pitch)
+
+    def rotate(self, yaw, pitch):
+        return Vector(self.x * math.cos(yaw) + (self.z * math.sin(pitch) + self.y * math.cos(pitch)) * math.sin(yaw),
+                      -self.x * math.sin(yaw) + (self.z * math.sin(pitch) + self.y * math.cos(pitch)) * math.cos(yaw),
+                      self.z * math.cos(pitch) - self.y * math.sin(pitch))
+
     @property
     def x(self):
         return self.__i
@@ -95,3 +109,5 @@ class Vector:
     def z(self):
         return self.__k
 
+
+Vector.ORIGIN = Vector(0, 0, 0)
