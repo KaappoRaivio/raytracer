@@ -16,7 +16,10 @@ class Painter:
         return self
 
     def set(self, x, y, color):
-        self.window.fill(color, pygame.Rect(x * self.scale, y * self.scale, self.scale, self.scale))
+        clamped = map(lambda x: min(x, 255), color)
+
+
+        self.window.fill((*clamped,), pygame.Rect(x * self.scale, y * self.scale, self.scale, self.scale))
 
     def fill(self, pixels):
         for y, row in enumerate(pixels):

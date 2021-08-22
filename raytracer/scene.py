@@ -4,8 +4,10 @@ import dataclasses
 import math
 
 from painter import Painter
-from triangle import Ray, Triangle
+from geometry import Ray, Triangle, Intersection
 from vector import Vector
+
+import cProfile
 
 def floatrange(start, stop, step):
     i = start
@@ -51,8 +53,7 @@ class Camera:
         for z in range(self.viewport_size[1] - 1, -1, -1):
             ray_matrix_row = []
             for x in range(self.viewport_size[0]):
-                ray_matrix_row.append(self.origin
-                                      + Vector(viewport_to_viewplane_x * x - self.viewplane_size[0] // 2,
+                ray_matrix_row.append(Vector(viewport_to_viewplane_x * x - self.viewplane_size[0] // 2,
                                              self.viewplane_distance,
                                              viewport_to_viewplane_z * z - self.viewplane_size[1] // 2)
                                       .rotate(*self.rotation)
@@ -71,12 +72,13 @@ class Camera:
 @dataclasses.dataclass
 class Light:
     position: Vector
-    intensity: Tuple[float, float, float]
+    intensity: Vector
 
 
 class Scene:
-    def __init__(self, triangles, camera):
+    def __init__(self, triangles, lights,  camera):
         self.triangles = triangles
+        self.lights = lights
         self.camera = camera
 
     def do_raycast(self, ray):
@@ -88,34 +90,72 @@ class Scene:
 
         if intersections:
             closest = min(intersections, key=lambda intersection: intersection.distance)
-            brightness = 255 * abs(closest.vertex.plane.normal.normalize() * ray.direction.normalize())
-            return (brightness, brightness, brightness)
+
+            if not isinstance(closest, Intersection):
+                print("Problem!!")
+
+            color = self.calculate_color(closest)
+
+
+            # brightness = min(255 * abs(closest.vertex.plane.normal.normalize() * ray.direction.normalize()) / (closest.distance * 0.3) ** 2, 255)
+            # return (brightness, brightness, brightness)
+            return color
         else:
             return (0, 0, 0)
 
+    def calculate_color(self, intersection: Intersection):
+        color = Vector(0, 0, 0)
+
+
+        for light in self.lights:
+            occlusions = []
+
+            vectorToLight = light.position - intersection.intersecton
+            new_ray = Ray(intersection.intersecton, vectorToLight.normalize())
+
+            for triangle in self.triangles:
+                if (occlusion := triangle.get_intersection(new_ray)):
+                    # print(occlusion)
+                    occlusions.append(occlusion)
+
+            if not occlusions:
+                color += abs(intersection.vertex.plane.normal.normalize() * vectorToLight.normalize())  / abs(vectorToLight) ** 2 * light.intensity
+        # print(color)
+        return color
+
+
+
+
+
     def trace(self):
         viewplane = self.camera.get_viewplane()
-        pixels = [[self.do_raycast(Ray(self.camera.origin, x - self.camera.origin)) for x in z] for z in viewplane]
+        pixels = [[self.do_raycast(Ray(self.camera.origin, x)) for x in z] for z in viewplane]
 
         return pixels
 
 
 
+viewport_size = (160, 160)
 
 if __name__ == '__main__':
-    camera = Camera(Vector(0, 0, -0.2), (math.radians(0), math.radians(0)), viewplane_distance=2, viewplane_size=(2, 2), viewport_size=(80, 80))
+    camera = Camera(Vector(0, 0, 0), (math.radians(0), math.radians(0)), viewplane_distance=2, viewplane_size=(2, 2), viewport_size=viewport_size)
     triangles = [
         Triangle(Vector(-1, 4, 1),
                  Vector(1, 4, 0),
-                 Vector(0, 2, -1)),
+                 Vector(0, 3, -1)),
         Triangle(Vector(-1, 4, 1),
                  Vector(1, 4, 0),
                  Vector(0, 2, 3)),
         Triangle(Vector(-1, 4, 1),
-                 Vector(0, 2, -1),
+                 Vector(0, 2, 3),
                  Vector(-2, 1, 2)),
     ]
-    scene = Scene(triangles, camera)
+
+    lights = [
+        Light(Vector(0, 0, 2), Vector(500, 1000, 3000)),
+        Light(Vector(0, 1, 1), Vector(300, 100, 100)),
+    ]
+    scene = Scene(triangles, lights, camera)
     # print("\n".join(map(lambda f: " ".join(map(str, f)), pixels)))
 
     def handler(event):
@@ -145,9 +185,11 @@ if __name__ == '__main__':
 
         return False
 
-    with Painter(80, 80, 10) as painter:
+    with Painter(*viewport_size, int(800 / viewport_size[0])) as painter:
         while True:
             pixels = scene.trace()
+            print("traced", flush=True)
+            cProfile.run("scene.trace()")
             # scene.camera.viewplane_distance += 0.1
             # scene.camera.origin += Vector(0, -10, 0)
             # painter.set(1, 1, (255, 0, 0))

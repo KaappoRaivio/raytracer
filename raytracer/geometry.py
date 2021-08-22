@@ -15,7 +15,7 @@ class Plane:
         return abs(self.normal * vector + self.intersect) < self.limit
 
     def get_intersection_distance(self, ray):
-        if self.normal * ray.direction == 0:
+        if self.normal * ray.direction == 0 or self.includes(ray.constant):
             # raise Exception(f"{ray} doesn't intersect {self}!")
             return 0
         else:
@@ -54,11 +54,20 @@ class Triangle:
         normal = (t1 - t2) @ (t1 - t3)
         intersect = -normal * t1
 
+        self.v1 = self.t2 - self.t3
+        self.v2 = self.t1 - self.t3
+        self.v3 = self.t2 - self.t1
+
+        self.b1 = self.v1 @ self.v2
+        self.b2 = self.v2 @ self.v1
+        self.b3 = self.v3 @ (-self.v2)
+
         self.plane = Plane(normal, intersect)
 
 
     def contains(self, vector):
-        return self.check_coarse(vector) and self.plane.includes(vector) and self.check_fine(vector)
+        return self.plane.includes(vector) and self.check_fine(vector)
+        # return self.check_coarse(vector) and self.plane.includes(vector) and self.check_fine(vector)
 
 
     def get_intersection(self, ray):
@@ -78,24 +87,24 @@ class Triangle:
 
     def check_fine(self, vector):
         # print(self.minimum < vector < self.maximum)
-        v = self.t2 - self.t3
-        a = v @ (vector - self.t3)
-        b = v @ (self.t1 - self.t3)
-        c = a * b
+        # v = self.t2 - self.t3
+        a = self.v1 @ (vector - self.t3)
+        # b = self.v1 @ (self.v2)
+        c = a * self.b1
 
         if c < 0: return False
 
-        v = self.t1 - self.t3
-        a = v @ (vector - self.t3)
-        b = v @ (self.t2 - self.t3)
-        c = a * b
+        # v = self.t1 - self.t3
+        a = self.v2 @ (vector - self.t3)
+        # b = self.v2 @ (self.v1)
+        c = a * self.b2
 
         if c < 0: return False
 
-        v = self.t2 - self.t1
-        a = v @ (vector - self.t1)
-        b = v @ (self.t3 - self.t1)
-        c = a * b
+        # v = self.t2 - self.t1
+        a = self.v3 @ (vector - self.t1)
+        # b = self.v3 @ (-self.v2)
+        c = a * self.b3
 
         if c < 0: return False
 

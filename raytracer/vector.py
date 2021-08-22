@@ -54,6 +54,14 @@ class Vector:
         else:
             return False
 
+    def __bool__(self):
+        return True
+
+    def __iter__(self):
+        yield self.i
+        yield self.j
+        yield self.k
+
     def __gt__(self, other):
         return self.i > other.i and self.j > other.j and self.k > other.k
 
