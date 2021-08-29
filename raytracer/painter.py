@@ -16,7 +16,7 @@ class Painter:
         return self
 
     def set(self, x, y, color):
-        clamped = map(lambda x: min(x, 255), color)
+        clamped = map(lambda x: min(x * 256, 255), color)
 
 
         self.window.fill((*clamped,), pygame.Rect(x * self.scale, y * self.scale, self.scale, self.scale))
@@ -35,14 +35,20 @@ class Painter:
 
     def wait(self, callback=lambda x: x):
         while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-                else:
-                    if callback(event):
-                        # self.update()
-                        return
+            # print("waiting")
+            try:
+                event = pygame.event.wait(1000)
+            except KeyboardInterrupt:
+                pygame.quit()
+                exit()
+            # for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            else:
+                if callback(event):
+                    # self.update()
+                    return
 
 
 

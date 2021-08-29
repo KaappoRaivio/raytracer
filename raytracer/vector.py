@@ -3,10 +3,12 @@ import functools
 
 @functools.total_ordering
 class Vector:
-    def __init__(self, i, j, k):
+    def __init__(self, i, j, k, normalized=False):
         self.__i = i
         self.__j = j
         self.__k = k
+
+        self.__normalized = normalized
 
 
     def __add__(self, other):
@@ -80,6 +82,9 @@ class Vector:
     def __repr__(self):
         return f"Vector({self.i}, {self.j}, {self.k})"
 
+    def __mod__(self, other):
+        return Vector(self.i * other.i, self.j * other.j, self.k * other.k)
+
     def transform(self, other):
         return Vector(self.i * other.i, self.j * other.j, self.k * other.k)
 
@@ -95,7 +100,12 @@ class Vector:
                       self.z * math.cos(pitch) - self.y * math.sin(pitch))
 
     def normalize(self):
-        return self / abs(self)
+        if self.__normalized:
+            return self
+        else:
+            normalized = self / abs(self)
+            normalized.__normalized = True
+            return normalized
 
     @property
     def x(self):
