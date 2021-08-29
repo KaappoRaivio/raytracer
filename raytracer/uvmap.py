@@ -1,25 +1,27 @@
+from __future__ import  annotations
+
 import math
 from abc import ABC, abstractmethod
 
-from geometry import Sphere
-from vector import Vector
+import geometry
+import vector
 
 
 class UVMap(ABC):
     @abstractmethod
-    def get_uv(self, xyz: Vector) -> Vector:
+    def get_uv(self, xyz: vector.Vector) -> vector.Vector:
         pass
 
 
 class UVMapSphere(UVMap):
-    def __init__(self, sphere: Sphere):
+    def __init__(self, sphere: geometry.Sphere):
         self.sphere = sphere
 
-    def get_uv(self, xyz: Vector) -> Vector:
-        d = self.sphere.center - xyz
+    def get_uv(self, xyz: vector.Vector) -> vector.Vector:
+        d = (self.sphere.center - xyz).normalize()
 
         u = 0.5 + math.atan2(d.x, d.y) / (2 * math.pi)
         v = 0.5 - math.asin(d.z) / math.pi
 
-        return Vector(u, v, 0)
+        return vector.Vector(u, v, 0)
 

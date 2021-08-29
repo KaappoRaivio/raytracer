@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import uvmap
+
 LIMIT: float = 0.001
 
 
@@ -23,6 +25,10 @@ class Object(ABC):
     def get_normal_at(self, position: Vector):
         pass
 
+    @abstractmethod
+    def get_uv(self, xyz: Vector):
+        pass
+
 
 @dataclasses.dataclass
 class Intersection:
@@ -34,8 +40,10 @@ class Intersection:
 
 
 class Plane(Object):
+
     def __init__(self, normal, intersect, material):
         super().__init__(material)
+        pass
 
         self.normal = normal
         self.intersect = intersect
@@ -60,6 +68,8 @@ class Plane(Object):
     def get_normal_at(self, position: Vector):
         return self.normal.normalize()
 
+    def get_uv(self, xyz: Vector):
+        return Vector(0.5, 0.5, 0)
 
 @dataclasses.dataclass
 class Ray:
@@ -157,6 +167,9 @@ class Triangle(Object):
 
         return True
 
+    def get_uv(self, xyz: Vector):
+        return Vector(0.5, 0.5, 0)
+
 
 class Rectangle(Object):
 
@@ -183,6 +196,8 @@ class Rectangle(Object):
         self.triangle1 = Triangle(t1, t2, t3, material, t5)
         self.triangle2 = Triangle(t2, t3, t4, material, t5)
 
+    def get_uv(self, xyz: Vector):
+        return Vector(0.5, 0.5, 0)
 
 
 class Sphere(Object):
@@ -192,6 +207,8 @@ class Sphere(Object):
 
         self.center = center
         self.radius = radius
+
+        self.uv_map = uvmap.UVMapSphere(self)
 
     def includes(self, point: Vector):
         return ((self.center - point) ** 2 - self.radius ** 2) < LIMIT
@@ -215,6 +232,10 @@ class Sphere(Object):
             return base,
 
         return base + math.sqrt(discriminant), base - math.sqrt(discriminant)
+
+    def get_uv(self, xyz: Vector):
+        # return Vector(0.5, 0.5, 0)
+        return self.uv_map.get_uv(xyz)
 
     def get_intersection(self, ray):
         distances = self.get_intersection_distance(ray)

@@ -26,8 +26,8 @@ class ImageTexture(Texture):
         print(self.pixels[0, 100])
 
     def get_color(self, uv: Vector):
-        i = uv.u // self.size[0]
-        j = uv.v // self.size[1]
+        i = int(uv.u * self.size[0])
+        j = int(uv.v * self.size[1])
 
         return Vector(*self.pixels[i, j]) / 256
 

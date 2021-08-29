@@ -1,30 +1,35 @@
 import math
+from pathlib import Path
 
 from geometry import Rectangle, Triangle, Sphere, Plane
 from painter import Painter
 from scene import Camera, Scene, Light
+from texture import SolidColor, ImageTexture
 from vector import Vector
 from visual import Material
 
-viewport_size = (1440, 1440)
+viewport_size = (1000, 1000)
 
 
 CAMERA_POSITION = Vector(0, -5, 7)
 camera = Camera(CAMERA_POSITION, (math.radians(0), math.radians(20)), viewplane_distance=2, viewplane_size=(2, 2), viewport_size=viewport_size)
 
 
-triangle = Material(Vector(1, 0.01, 0.01), specular_reflectivity=Vector(0.05, 0.05, 0.05))
-blue = Material(Vector(0.5, 0.5, 1))
-white = Material(Vector(1, 1, 1))
+triangle = Material(SolidColor(Vector(1, 0.01, 0.01)), specular_reflectivity=Vector(0.05, 0.05, 0.05))
+blue = Material(SolidColor(Vector(0.5, 0.5, 1)))
+white = Material(SolidColor(Vector(1, 1, 1)))
 
-yellow1 = Vector(0.8, 0.8, 0.05)
-yellow2 = Vector(1, 0.9, 0.05)
-yellow3 = Vector(1, 1, 0.05)
+# yellow1 = SolidColor(Vector(0.8, 0.8, 0.05))
+yellow1 = ImageTexture(Path("raytracer/res/texture1.png"))
+# yellow2 = SolidColor(Vector(1, 0.9, 0.05))
+yellow2 = ImageTexture(Path("raytracer/res/texture1.png"))
+# yellow3 = SolidColor(Vector(1, 1, 0.05))
+yellow3 = ImageTexture(Path("raytracer/res/texture1.png"))
 
-darkblue = Vector(0, 0, 1)
+darkblue = SolidColor(Vector(0, 0, 1))
 
 
-s = 0.25
+s = 0.0
 
 s1 = Material(yellow1, specular_reflectivity=Vector(s * 1, s * 1, s * 1))
 s2 = Material(yellow2, specular_reflectivity=Vector(s * 2, s * 2, s * 2))
@@ -42,13 +47,13 @@ objects = [
               Vector(-5, 6, 5),
               Vector(0, 0, -1),
               Vector(0, 0, 3),
-              Material(Vector(0.7, 0.2, 0.2)),
+              Material(SolidColor(Vector(0.7, 0.2, 0.2))),
               t5=CAMERA_POSITION),
     Rectangle(Vector(5, 6, -1),
               Vector(5, 6, 3),
               Vector(0, 0, -1),
               Vector(0, 0, 3),
-              Material(Vector(0.7, 0.2, 0.2)),
+              Material(SolidColor(Vector(0.7, 0.2, 0.2))),
               t5=CAMERA_POSITION),
 
 
@@ -102,7 +107,7 @@ def handler(event):
 
     return False
 
-with Painter(*viewport_size, int(1440 / viewport_size[0])) as painter:
+with Painter(*viewport_size, int(1000 / viewport_size[0])) as painter:
     while True:
         pixels = scene.trace(3)
         print("traced", flush=True)

@@ -4,6 +4,7 @@ import multiprocessing
 
 from geometry import Ray, Triangle, Sphere, Rectangle, Intersection, Plane
 from painter import Painter
+from texture import SolidColor
 from vector import Vector
 from visual import Material
 
@@ -89,7 +90,7 @@ class Scene:
                 intersections.append(intersection)
 
         for light in self.lights:
-            object = Sphere(light.position, 0.05, Material(light.intensity.normalize(), interacts_with_light=False))
+            object = Sphere(light.position, 0.05, Material(SolidColor(light.intensity.normalize()), interacts_with_light=False))
 
             if intersection := object.get_intersection(ray):
                 intersections.append(intersection)
@@ -116,8 +117,10 @@ class Scene:
 
 
         diffuse_color = Vector(0, 0, 0)
+        albedo_texture_color = material.albedo.get_color(intersection.vertex.get_uv(intersection.intersection))
+
         if not material.interacts_with_light:
-            return self.do_gamma_correction(material.albedo, 2.2)
+            return self.do_gamma_correction(albedo_texture_color, 2.2)
 
         for light in self.lights:
             occlusions = []
@@ -150,7 +153,7 @@ class Scene:
 
         dot = max(vertex_normal * vector_to_camera, 0)
 
-        luxel = diffuse_color % self.do_gamma_correction(material.albedo, 2.2) \
+        luxel = diffuse_color % self.do_gamma_correction(albedo_texture_color, 2.2) \
                 + self.ambient_light_intensity * dot
 
         result = luxel % (Vector.ONE - specular_reflectivity) \

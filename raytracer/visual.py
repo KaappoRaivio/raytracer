@@ -1,5 +1,6 @@
 import dataclasses
 
+from texture import Texture
 from vector import Vector
 
 
@@ -11,7 +12,7 @@ class Color:
 
 @dataclasses.dataclass
 class Material:
-    albedo: Vector
+    albedo: Texture
     specular_reflectivity: Vector = Vector(0, 0, 0)
     interacts_with_light: bool = True
 
