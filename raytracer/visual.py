@@ -12,6 +12,7 @@ class Color:
 @dataclasses.dataclass
 class Material:
     albedo: Vector
+    specular_reflectivity: Vector = Vector(0, 0, 0)
     interacts_with_light: bool = True
 
 

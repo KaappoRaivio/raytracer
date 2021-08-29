@@ -107,6 +107,9 @@ class Vector:
             normalized.__normalized = True
             return normalized
 
+    def reflection(self, normal):
+        return self - (2 * (self * normal) / self ** 2) * normal
+
     @property
     def x(self):
         return self.__i
@@ -133,5 +136,14 @@ class Vector:
     def z(self):
         return self.__k
 
+    @property
+    def u(self):
+        return self.__i
+
+    @property
+    def v(self):
+        return self.__j
+
 
 Vector.ORIGIN = Vector(0, 0, 0)
+Vector.ONE = Vector(1, 1, 1)

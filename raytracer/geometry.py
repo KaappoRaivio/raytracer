@@ -29,14 +29,16 @@ class Intersection:
     distance: int
     intersection: Vector
     vertex: Object
+    ray: Ray
 
 
 
-@dataclasses.dataclass
-class Plane:
-    normal: Vector
-    intersect: float
+class Plane(Object):
+    def __init__(self, normal, intersect, material):
+        super().__init__(material)
 
+        self.normal = normal
+        self.intersect = intersect
 
     def includes(self, vector):
         return abs(self.normal * vector + self.intersect) < LIMIT
@@ -47,6 +49,16 @@ class Plane:
             return 0
         else:
             return -(self.normal * ray.constant + self.intersect) / (self.normal * ray.direction)
+
+    def get_intersection(self, ray: Ray):
+        d = self.get_intersection_distance(ray)
+        if d <= 0:
+            return False
+
+        return Intersection(d, ray.apply(d), self, ray)
+
+    def get_normal_at(self, position: Vector):
+        return self.normal.normalize()
 
 
 @dataclasses.dataclass
@@ -60,7 +72,7 @@ class Ray:
 
 
 class Triangle(Object):
-    def __init__(self, t1, t2, t3, material):
+    def __init__(self, t1, t2, t3, material, t4=None):
         super().__init__(material)
 
         self.t1 = t1
@@ -76,7 +88,16 @@ class Triangle(Object):
                               max(t1.y, t2.y, t3.y),
                               max(t1.z, t2.z, t3.z))
 
+
         normal = (t1 - t2) @ (t1 - t3)
+        # print(normal)
+
+        if t4 is not None:
+            if normal * (t1 - t4) > 0:
+                normal = -normal
+                # print("moi")
+        # print(normal)
+
         intersect = -normal * t1
 
         self.v1 = self.t2 - self.t3
@@ -87,14 +108,14 @@ class Triangle(Object):
         self.b2 = self.v2 @ self.v1
         self.b3 = self.v3 @ (-self.v2)
 
-        self.plane = Plane(normal, intersect)
+        self.plane = Plane(normal, intersect, material)
 
     def contains(self, vector):
         return self.plane.includes(vector) and self.check_fine(vector)
         # return self.check_coarse(vector) and self.plane.includes(vector) and self.check_fine(vector)
 
     def get_normal_at(self, position: Vector):
-        return self.plane.normal.normalize()
+        return self.plane.get_normal_at(position)
 
     def get_intersection(self, ray):
         λ = self.plane.get_intersection_distance(ray)
@@ -105,7 +126,7 @@ class Triangle(Object):
         if not self.contains(intersection):
             return False
         else:
-            return Intersection(λ, intersection, self)
+            return Intersection(λ, intersection, self, ray)
 
     def check_coarse(self, vector):
         # print(self.minimum < vector < self.maximum)
@@ -142,28 +163,25 @@ class Rectangle(Object):
     def get_intersection(self, ray: Ray):
         c1 = self.triangle1.get_intersection(ray)
         if c1:
+            c1.vertex = self
             return c1
 
         c2 = self.triangle2.get_intersection(ray)
         if c2:
+            c2.vertex = self
             return c2
 
         return False
 
 
     def get_normal_at(self, position: Vector):
-        # pass
-        return self.triangle1.plane.normal
+        return self.triangle1.get_normal_at(position)
 
-    def __init__(self, t1, t2, t3, t4, material):
+    def __init__(self, t1, t2, t3, t4, material, t5=None):
         super().__init__(material)
 
-        self.triangle1 = Triangle(t1, t2, t3, material)
-        self.triangle2 = Triangle(t2, t3, t4, material)
-        # self.t1 = t1
-        # self.t2 = t2
-        # self.t3 = t3
-        # self.t4 = t4
+        self.triangle1 = Triangle(t1, t2, t3, material, t5)
+        self.triangle2 = Triangle(t2, t3, t4, material, t5)
 
 
 
@@ -189,6 +207,7 @@ class Sphere(Object):
 
         discriminant = (d * (C - P)) ** 2 - ((C - P) ** 2 - r ** 2)
         if discriminant < 0:
+
             return None
 
         base = -(d * (C - P))
@@ -207,9 +226,10 @@ class Sphere(Object):
             return False
 
         intersection = ray.apply(λ)
-        return Intersection(λ, intersection, self)
+        return Intersection(λ, intersection, self, ray)
 
     def get_normal_at(self, position: Vector):
+        # print((position - self.center).normalize())
         return (position - self.center).normalize()
 
 
@@ -218,16 +238,17 @@ class Sphere(Object):
 
 
 if __name__ == "__main__":
-    # t = Triangle(Vector(1, 0, 0),
-    #              Vector(0, 1, 0),
-    #              Vector(0, 0, 1))
-    s = Sphere(Vector(5, 4, 3), 2.5)
+    t = Triangle(Vector(-5, 6, 5),
+                 Vector(0, 0, 3),
+                 Vector(5, 6, 3), None, t4=Vector(0, -5, 0))
+    print(t.plane.normal)
+    # s = Sphere(Vector(5, 4, 3), 2.5)
 
     # print(t.plane.normal)
     # print(t.plane.intersect)
 
-    origin = Vector(1, 0, 7)
-    direction = Vector(1, 1, -0.5)
-    ray = Ray(origin, direction)
+    # origin = Vector(1, 0, 7)
+    # direction = Vector(1, 1, -0.5)
+    # ray = Ray(origin, direction)
+    # # print(s.get_intersection(ray))
     # print(s.get_intersection(ray))
-    print(s.get_intersection(ray))
