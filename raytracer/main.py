@@ -8,7 +8,7 @@ from texture import SolidColor, ImageTexture
 from vector import Vector
 from visual import Material
 
-viewport_size = (1000, 1000)
+viewport_size = (100, 100)
 
 
 CAMERA_POSITION = Vector(0, -5, 7)
@@ -35,7 +35,7 @@ s1 = Material(yellow1, specular_reflectivity=Vector(s * 1, s * 1, s * 1))
 s2 = Material(yellow2, specular_reflectivity=Vector(s * 2, s * 2, s * 2))
 s3 = Material(yellow3, specular_reflectivity=Vector(s * 4, s * 4, s * 4))
 
-sky = Material(darkblue, interacts_with_light=True)
+sky = Material(darkblue, interacts_with_light=False)
 
 objects = [
     Triangle(Vector(-5, 6, 5),
@@ -55,27 +55,29 @@ objects = [
               Vector(0, 0, 3),
               Material(SolidColor(Vector(0.7, 0.2, 0.2))),
               t5=CAMERA_POSITION),
-
-
+    #
+    #
     Sphere(Vector(-2.5, 4, 4.5), 0.3, s1),
     Sphere(Vector(-1, 4, 4.3), 0.6, s2),
     Sphere(Vector(1, 4, 4), 1, s3),
 
 
-    # Sphere(CAMERA_POSITION, 100, sky),
+    Sphere(CAMERA_POSITION + Vector(0,0, 0), 100, sky),
     # Sphere(Vector(-1, 1, 1), 0.1, Material(Vector(1, 1, 0.6))),
 
-    Plane(Vector(0, 0, 1), -1, white),
-    Plane(-Vector(0, 0.5, -1), 100, sky)
+    # Plane(Vector(0, 0, 1), -1, white),
+
+
+    # Plane(-Vector(0, 0.5, -1), 100, sky)
 ]
 
 lights = [
     # Light(Vector(0, 0, 2), Vector(500, 1000, 3000)),
     # Light(Vector(0.5, -3, 0.5), Vector(0.6, 1.5, 2)),
 
-    Light(Vector(3, 4, 5), Vector(3, 1, 10)),
+    # Light(Vector(3, 4, 5), Vector(3, 1, 10)),
 
-    Light(Vector(-5, -5, 25), Vector(1, 1, 0.8) * 5),
+    Light(Vector(-5, -10, 25), Vector(1, 1, 1) * 20),
 ]
 scene = Scene(objects, lights, camera, ambient_light_intensity=Vector(0.01, 0.01, 0.01))
 # print("\n".join(map(lambda f: " ".join(map(str, f)), pixels)))

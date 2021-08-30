@@ -96,6 +96,7 @@ class Scene:
                 intersections.append(intersection)
 
         if intersections:
+            # print(intersections)
             closest = min(intersections, key=lambda intersection: intersection.distance)
 
             if not isinstance(closest, Intersection):
@@ -136,8 +137,10 @@ class Scene:
 
 
             if not occlusions:
-                diffuse_color += max(vertex_normal * vector_to_light.normalize(), 0) \
-                         / abs(vector_to_light) ** 2 * self.do_gamma_correction(light.intensity, 2.2)
+                # diffuse_color += max(vertex_normal * vector_to_light.normalize(), 0) \
+                #                  / abs(vector_to_light) ** 2 * self.do_gamma_correction(light.intensity, 2.2)
+                diffuse_color += abs(vertex_normal * vector_to_light.normalize()) \
+                                 / abs(vector_to_light) ** 2 * self.do_gamma_correction(light.intensity, 2.2)
 
         specular_reflectivity = material.specular_reflectivity
         if bounces_left > 0 and specular_reflectivity != Vector(0, 0, 0):

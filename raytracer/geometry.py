@@ -211,7 +211,7 @@ class Sphere(Object):
         self.uv_map = uvmap.UVMapSphere(self)
 
     def includes(self, point: Vector):
-        return ((self.center - point) ** 2 - self.radius ** 2) < LIMIT
+        return abs((self.center - point) ** 2 - self.radius ** 2) < LIMIT
 
     def get_intersection_distance(self, ray):
         if self.includes(ray.constant):
@@ -223,9 +223,11 @@ class Sphere(Object):
         P = self.center
 
         discriminant = (d * (C - P)) ** 2 - ((C - P) ** 2 - r ** 2)
+        # print(discriminant)
         if discriminant < 0:
-
             return None
+        # else:
+        #     print(discriminant)
 
         base = -(d * (C - P))
         if discriminant == 0:
@@ -259,10 +261,25 @@ class Sphere(Object):
 
 
 if __name__ == "__main__":
-    t = Triangle(Vector(-5, 6, 5),
-                 Vector(0, 0, 3),
-                 Vector(5, 6, 3), None, t4=Vector(0, -5, 0))
-    print(t.plane.normal)
+    # t = Triangle(Vector(-5, 6, 5),
+    #              Vector(0, 0, 3),
+    #              Vector(5, 6, 3), None, t4=Vector(0, -5, 0))
+    # print(t.plane.normal)
+    C = Vector(0, 1, 1)
+    d = Vector(0, -1, -1).normalize()
+    P = Vector.ORIGIN
+    r = 3.3
+
+    s = Sphere(P, r, None)
+    ray = Ray(C, d)
+
+    # s =
+    # p =
+    # print(s, p, r)
+
+    a = (d * (C - P)) ** 2 - ((C - P) ** 2 - r ** 2)
+
+    print(s.get_intersection_distance(ray), a)
     # s = Sphere(Vector(5, 4, 3), 2.5)
 
     # print(t.plane.normal)
