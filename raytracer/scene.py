@@ -2,6 +2,8 @@ import dataclasses
 import math
 import multiprocessing
 
+import pygame
+
 from geometry import Ray, Triangle, Sphere, Rectangle, Intersection, Plane
 from painter import Painter
 from texture import SolidColor
@@ -132,7 +134,7 @@ class Scene:
 
             for object in self.objects:
                 if occlusion := object.get_intersection(new_ray):
-                    if occlusion.vertex.material.interacts_with_light:
+                    if occlusion.vertex.material.interacts_with_light and occlusion.distance < abs(vector_to_light):
                         occlusions.append(occlusion)
 
 
@@ -178,23 +180,38 @@ class Scene:
 
     def trace(self, bounces):
         global f
+        print("generating viewplane")
         viewplane = self.camera.get_viewplane()
 
-        def f(x):
-            return self.do_raycast(Ray(self.camera.origin, x), bounces)
+        print("starting tracing")
 
-        with multiprocessing.Pool(8) as pool:
+        a = 0
+        flattened = [(pixel, x, y) for y, row in enumerate(viewplane) for x, pixel in enumerate(row)]
+
+
+        def f(args):
+            direction, x, row = args
+            if not row % 10 and x == 0:
+                # pygame.event.get()
+                print(row)
+
+
+            return self.do_raycast(Ray(self.camera.origin, direction), bounces)
+
+        with multiprocessing.Pool(12) as pool:
+            return pool.map(f, flattened, 128)
         # pixels = [[self.do_raycast(Ray(self.camera.origin, x)) for x in z] for z in viewplane]
-            pixels = []
-            for index, z in enumerate(viewplane):
-                row = pool.map(f, z, 128)
-                pixels.append(row)
+        #     pixels = []
+        #     for index, z in enumerate(viewplane):
+        #         row = pool.map(f, z, 128)
+        #         pixels.append(row)
+        #
+        #         if not index % 10:
+        #             print(f"Row {index}!")
 
-                if not index % 10:
-                    print(f"Row {index}!")
 
 
-        return pixels
+        # return pixels
 
 
 

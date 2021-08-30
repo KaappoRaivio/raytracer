@@ -41,6 +41,6 @@ class SolidColor(Texture):
 
 if __name__ == "__main__":
     # print(PIL.__version__)
-    t = ImageTexture(pathlib.Path("raytracer/res/texture1.png"))
+    t = ImageTexture(pathlib.Path("/home/kaappo/git/raytracer/raytracer/res/texture1.png"))
     print(t.get_color())
 

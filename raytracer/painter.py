@@ -21,10 +21,14 @@ class Painter:
 
         self.window.fill((*clamped,), pygame.Rect(x * self.scale, y * self.scale, self.scale, self.scale))
 
-    def fill(self, pixels):
-        for y, row in enumerate(pixels):
-            for x, pixel in enumerate(row):
-                self.set(x, y, pixel)
+    def fill(self, pixels, width):
+        for index, pixel in enumerate(pixels):
+            x = index % width
+            y = index // width
+            self.set(x, y, pixel)
+        # for y, row in enumerate(pixels):
+        #     for x, pixel in enumerate(row):
+        #         self.set(x, y, pixel)
 
     def update(self):
         for event in pygame.event.get():
