@@ -4,7 +4,7 @@ import math
 from abc import ABC, abstractmethod
 
 import geometry
-from vector import Vector
+from geometry.vector import Vector
 
 
 class UVMap(ABC):
@@ -26,7 +26,7 @@ class UVMapSphere(UVMap):
         return Vector(u, v, 0)
 
 
-class UVMapTrianle(UVMap):
+class UVMapTriangle(UVMap):
     def __init__(self, triangle: geometry.Triangle):
         self.triangle = triangle
 
@@ -37,22 +37,30 @@ class UVMapTrianle(UVMap):
 
 
         tangent = t3 - t1
-        bitangent = tangent @ self.triangle.get_normal_at(xyz)
+        normal = self.triangle.get_normal_at(xyz)
+        bitangent = tangent @ normal
 
         width = tangent
         height = t2 - t1 - ((width * t2 - width * t1) / width ** 2) * width
 
-        i = width.normalize()
-        j = height.normalize()
+        i = width
+        j = height
+        k = normal.normalize()
 
         local_xyz = xyz - t1
-        
+
+        # u, v, _ = local_xyz.in_terms_of_components(i, j, k)
+        return local_xyz.in_terms_of_components(i, j, k)
+
+        # print(u, v, _)
+        # print(i.normalize(), j.normalize())
 
 
-        triangle_width = abs(width)
-        triangle_height = abs(height)
 
-        print(triangle_width, triangle_height)
+        # triangle_width = abs(width)
+        # triangle_height = abs(height)
+        #
+        # print(triangle_width, triangle_height)
 
 if __name__ == "__main__":
     t = geometry.Triangle(Vector(-5, 6, 5),
@@ -61,4 +69,5 @@ if __name__ == "__main__":
                           None)
 
     u = UVMapTrianle(t)
-    print(u.get_uv(Vector(0,0,0)))
+    print(u.get_uv(Vector(-0.42, 4.32, 3.8)))
+    print(u.get_uv(Vector(-0.72, 2.16, 3.5)))

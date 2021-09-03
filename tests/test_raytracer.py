@@ -7,8 +7,8 @@ import unittest
 from click.testing import CliRunner
 
 from raytracer import cli
-from raytracer.geometry import Triangle
-from raytracer.vector import Vector
+from geometry.geometry import Triangle
+from geometry.vector import Vector
 
 
 class TestRaytracer(unittest.TestCase):
