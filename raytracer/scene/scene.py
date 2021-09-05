@@ -1,4 +1,7 @@
 import math
+import random
+from abc import ABC, abstractmethod
+from typing import List
 
 DEBUG = False
 
@@ -57,20 +60,74 @@ class Camera:
 
 
 
+class LightSource(ABC):
+    @abstractmethod
+    def get_representative_object(self):
+        pass
 
+    @abstractmethod
+    def emits_light(self):
+        pass
+
+    @abstractmethod
+    def get_position(self):
+        pass
+
+    @abstractmethod
+    def get_intensity(self):
+        pass
 
 
 @dataclasses.dataclass
-class Light:
+class PointLightSource(LightSource):
     position: Vector
     intensity: Intensity
+
+    render_in_picture: bool = True
+    emit_light: bool = True
+
+    def get_representative_object(self):
+        if self.render_in_picture:
+            return Sphere(self.position, math.sqrt(abs(self.intensity)) / 20, Material(SolidTexture(self.intensity.normalize()), interacts_with_light=False))
+        else:
+            return None
+
+    def emits_light(self):
+        return self.emit_light
+
+    def get_position(self):
+        return self.position
+
+    def get_intensity(self):
+        return self.intensity
+
+
+@dataclasses.dataclass
+class ScatteredLightSource:
+    position: Vector
+    intensity: Intensity
+
+    radius: float
+    amount_of_light_points: int
+
+    def __iter__(self):
+        yield PointLightSource(self.position, self.intensity, render_in_picture=True, emit_light=False)
+        for i in range(self.amount_of_light_points):
+            length = random.random() * self.radius
+            i, j, k = (random.random() - 0.5 for i in range(3))
+            offset = Vector(i, j, k).normalize() * length
+            print(offset)
+            yield PointLightSource(self.position + offset, self.intensity / self.amount_of_light_points, render_in_picture=False)
+
+
+
 
 
 
 
 
 class Scene:
-    def __init__(self, objects, lights,  camera, ambient_light_intensity: Intensity=Intensity(0, 0, 0), gamma=2.2):
+    def __init__(self, objects, lights: List[LightSource],  camera, ambient_light_intensity: Intensity=Intensity(0, 0, 0), gamma=2.2):
         self.objects = objects
         self.lights = lights
         self.camera = camera
@@ -78,17 +135,7 @@ class Scene:
         self.gamma = gamma
 
     def do_raycast(self, ray, bounces_left=2) -> Color:
-        intersections = []
-
-        for object in self.objects:
-            if intersection := object.get_intersection(ray):
-                intersections.append(intersection)
-
-        for light in self.lights:
-            object = Sphere(light.position, math.sqrt(abs(light.intensity)) / 10, Material(SolidTexture(light.intensity.normalize()), interacts_with_light=False))
-
-            if intersection := object.get_intersection(ray):
-                intersections.append(intersection)
+        intersections = self.get_intersections(ray)
 
         if intersections:
             closest = min(intersections, key=lambda intersection: intersection.distance)
@@ -96,6 +143,18 @@ class Scene:
             return self.calculate_color(closest, bounces_left)
         else:
             return Intensity(0, 0, 0)
+
+    def get_intersections(self, ray):
+        intersections = []
+        for object in self.objects:
+            if intersection := object.get_intersection(ray):
+                intersections.append(intersection)
+        for light in self.lights:
+            object = light.get_representative_object()
+
+            if object is not None and (intersection := object.get_intersection(ray)):
+                intersections.append(intersection)
+        return intersections
 
     def calculate_color(self, intersection: Intersection, bounces_left=1):
         material = intersection.vertex.material
@@ -112,9 +171,12 @@ class Scene:
 
 
         for light in self.lights:
+            if not light.emits_light():
+                continue
+
             occlusions = []
 
-            vector_to_light = light.position - intersection.intersection
+            vector_to_light = light.get_position() - intersection.intersection
 
             new_ray = Ray(intersection.intersection, vector_to_light.normalize())
 
@@ -131,8 +193,8 @@ class Scene:
 
                 distance_coefficient = 1 / vector_to_light ** 2
                 # pixel_color += abs(vertex_normal * vector_to_light.normalize()) * abs(vector_to_light) ** 2 * self.do_gamma_correction(light.intensity, 2.2)
-                specular_intensity.add(light.intensity * distance_coefficient * specular_direction_coefficient)
-                diffuse_intensity.add(light.intensity * distance_coefficient * diffuse_direction_coefficient)
+                specular_intensity.add(light.get_intensity() * distance_coefficient * specular_direction_coefficient)
+                diffuse_intensity.add(light.get_intensity() * distance_coefficient * diffuse_direction_coefficient)
 
         specular_reflectivity = material.specular_reflectivity
         diffuse_reflectivity = material.diffuse_reflectivity
@@ -188,7 +250,7 @@ class Scene:
 
                 return self.do_raycast(Ray(self.camera.origin, direction), bounces)
 
-            with multiprocessing.Pool() as pool:
+            with multiprocessing.Pool(10) as pool:
                 return pool.map(f, flattened, 128)
         else:
             print("generating viewplane, DEBUG")
