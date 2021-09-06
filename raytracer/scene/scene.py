@@ -77,6 +77,10 @@ class LightSource(ABC):
     def get_intensity(self):
         pass
 
+    @abstractmethod
+    def get_size(self):
+        pass
+
 
 @dataclasses.dataclass
 class PointLightSource(LightSource):
@@ -85,10 +89,11 @@ class PointLightSource(LightSource):
 
     render_in_picture: bool = True
     emit_light: bool = True
+    radius: float = 0.2
 
     def get_representative_object(self):
         if self.render_in_picture:
-            return Sphere(self.position, math.sqrt(abs(self.intensity)) / 20, Material(SolidTexture(self.intensity.normalize()), interacts_with_light=False))
+            return Sphere(self.position, self.radius, Material(SolidTexture(self.intensity.normalize()), interacts_with_light=False))
         else:
             return None
 
@@ -100,6 +105,12 @@ class PointLightSource(LightSource):
 
     def get_intensity(self):
         return self.intensity
+
+    def get_size(self):
+        return self.radius
+
+
+
 
 
 @dataclasses.dataclass
@@ -189,7 +200,6 @@ class Scene:
             if not occlusions:
                 specular_direction_coefficient = abs(intersection.ray.direction.reflection(vertex_normal) * vector_to_light.normalize())
                 diffuse_direction_coefficient = abs(vector_to_light.normalize() * vertex_normal)
-                # diffuse_direction_coefficient = 1
 
                 distance_coefficient = 1 / vector_to_light ** 2
                 # pixel_color += abs(vertex_normal * vector_to_light.normalize()) * abs(vector_to_light) ** 2 * self.do_gamma_correction(light.intensity, 2.2)
@@ -208,24 +218,9 @@ class Scene:
             spexel = Intensity(0, 0, 0)
 
 
-
-        # dot = abs(vertex_normal * vector_to_camera)
-        # specular_intensity.add(self.ambient_light_intensity * dot)
-        # print("early return")
-
-
         luxel = specular_intensity.blend(1) * specular_reflectivity + diffuse_intensity.blend(1) * (Vector.ONE - specular_reflectivity)
-        # luxel = specular_intensity.blend(1) * specular_reflectivity + diffuse_intensity.blend(1) * diffuse_reflectivity
-        # result = texel * luxel + spexel * specular_reflectivity
         result = texel * luxel * (Vector.ONE - specular_reflectivity) + spexel * specular_reflectivity
         return result
-
-
-    def do_inverse_gamma_correction(self, color, gamma):
-        return Vector(color.i ** (1 / gamma), color.j ** (1 / gamma), color.k ** (1 / gamma))
-
-    def do_gamma_correction(self, color, gamma):
-        return Vector(color.i ** gamma, color.j ** gamma, color.k ** gamma)
 
 
     def trace(self, bounces):

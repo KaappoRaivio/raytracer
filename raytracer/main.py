@@ -20,7 +20,7 @@ from visual import Material, Color, ImageTexture, SolidTexture, Intensity
 
 # viewport_size = (250, 250)
 WINDOW_SIZE = 1000
-VIEWPORT_SIZE = (1000, 1000)
+VIEWPORT_SIZE = (100, 100)
 # VIEWPORT_SIZE = (100, 100)
 
 
@@ -106,10 +106,10 @@ objects = [
 lights = [
     # Light(Vector(-5, -10, 10), Intensity(1, 1, 1) * 400),
     # Light(Vector(3, 4, 5), Intensity(2.5, 2.5, 10)),
-    *ScatteredLightSource(Vector(4, 4.5, 4), Intensity(1, 1, 10) * 7, 2, 200),
-    *ScatteredLightSource(Vector(-4, 4.5, 5.5), Intensity(10, 2.5, 10) * 3, 2, 200),
+    *ScatteredLightSource(Vector(4, 4.5, 4), Intensity(1, 1, 10) * 7, 2, 20),
+    *ScatteredLightSource(Vector(-4, 4.5, 5.5), Intensity(10, 2.5, 10) * 3, 2, 20),
     # *ScatteredLightSource(Vector(-4, 4.5, 5.5), Intensity(10, 2.5, 10) * 3, 2, 10),
-    *ScatteredLightSource(Vector(-0.12, 3.83, 3.8), Intensity(2, 2, 0.5) / 2, 0.2, 200)
+    *ScatteredLightSource(Vector(-0.12, 3.83, 3.8), Intensity(2, 2, 0.5) / 2, 0.2, 20)
     # Light(Vector(0, 20, 5), Intensity(2.5, 2, 1) * 100),
     # Light(Vector(5, 0, 5), Intensity(1, 0.1, 0.1) * 100),
 ]
